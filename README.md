@@ -10,7 +10,7 @@ O **FitManage** é um sistema web completo desenvolvido para facilitar a adminis
 * **Banco de Dados:** MySQL.
 * **Versionamento:** Git & GitHub.
 
-## 🛠️ Funcionalidades Principais
+##🛠️ Funcionalidades Principais
 
 * **Autenticação Segura:** Sistema de login com persistência de dados e proteção de rotas.
 * **Recuperação de Senha:** Fluxo para redefinição de acesso via pergunta de segurança.
@@ -27,5 +27,10 @@ O **FitManage** é um sistema web completo desenvolvido para facilitar a adminis
 
 O projeto segue uma arquitetura modular para facilitar a manutenção, separando a lógica de conexão com o banco de dados, os componentes de interface (headers/footers) e os scripts de processamento PHP.
 
----
-*Projeto desenvolvido para fins acadêmicos.*
+Paleta de cores:
+
+.color1 { #20130a };
+.color2 { #142026 };
+.color3 { #123142 };
+.color4 { #3b657a };
+.color5 { #e9f0c9 };
