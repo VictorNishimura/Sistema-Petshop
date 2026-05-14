@@ -1,36 +1,28 @@
-# Sistema-de-Gestao-Academia
-# 🏋️‍♂️ FitManage - Sistema de Gestão de Academia
+# 🐾 PetLife - Sistema de Gestão de Pet Shop
 
-O **FitManage** é um sistema web completo desenvolvido para facilitar a administração de academias e centros esportivos. O projeto foi construído focando na agilidade do back-end com PHP e na responsividade do front-end com Bootstrap, garantindo uma experiência intuitiva tanto para administradores quanto para funcionários.
+O **PetLife** é um sistema web desenvolvido para gerenciar o fluxo de atendimento, serviços e clientes de um Pet Shop. O sistema permite o controle total desde o cadastro do tutor e seu animal de estimação até o agendamento de serviços especializados.
 
 ## 🚀 Tecnologias Utilizadas
 
-* **Front-End:** HTML5, CSS3, JavaScript e Bootstrap 5.
-* **Back-End:** PHP (com gerenciamento de sessões e métodos POST).
+* **Front-End:** HTML5, CSS3, JavaScript e Framework Bootstrap 5.
+* **Back-End:** PHP (Processamento de formulários, Variáveis de Sessão e Controle de Acesso).
 * **Banco de Dados:** MySQL.
 * **Versionamento:** Git & GitHub.
 
-##🛠️ Funcionalidades Principais
+## 🛠️ Funcionalidades Obrigatórias (Requisitos)
 
-* **Autenticação Segura:** Sistema de login com persistência de dados e proteção de rotas.
-* **Recuperação de Senha:** Fluxo para redefinição de acesso via pergunta de segurança.
-* **Gestão Completa (CRUD):**
-    * Cadastro e Visualização de **Alunos**.
-    * Cadastro e Visualização de **Instrutores**.
-    * Cadastro e Visualização de **Planos**.
-    * Cadastro e Visualização de **Modalidades**.
-* **Recursos Específicos:**
-    * **Check-in de Aulas:** Registro de presença de alunos em modalidades específicas.
-    * **Controle de Status:** Dashboard para monitoramento de alunos ativos e inadimplentes.
+* **Autenticação:** Login de usuários com persistência em banco de dados.
+* **Segurança:** Sistema de recuperação de senha via pergunta secreta.
+* **Gestão de Dados (CRUD):**
+    * Cadastro e Visualização de **Clientes (Tutores)**.
+    * Cadastro e Visualização de **Pets**.
+    * Cadastro e Visualização de **Serviços**.
+    * Cadastro e Visualização de **Funcionários**.
+* **Funcionalidades Temáticas:**
+    * **Agendamento Dinâmico:** Marcação de horários para Banho, Tosa e Consultas.
+    * **Prontuário Digital:** Visualização do histórico de atendimentos por animal.
 
-## 📁 Estrutura do Projeto
+## 📁 Organização do Código
 
-O projeto segue uma arquitetura modular para facilitar a manutenção, separando a lógica de conexão com o banco de dados, os componentes de interface (headers/footers) e os scripts de processamento PHP.
+O projeto utiliza o método **POST** para envio de dados, garantindo maior segurança, e **Variáveis de Sessão PHP** para manter o usuário conectado durante a navegação entre as páginas de administração.
 
-Paleta de cores:
-
-.color1 { #20130a };
-.color2 { #142026 };
-.color3 { #123142 };
-.color4 { #3b657a };
-.color5 { #e9f0c9 };
