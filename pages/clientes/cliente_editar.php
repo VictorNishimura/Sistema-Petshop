@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Nome e CPF sao obrigatorios.';
     } else {
         try {
-            $cliente['foto_perfil'] = salvarFotoCliente($_FILES['foto_perfil'] ?? [], $cliente['foto_perfil'] ?? null);
+            $cliente['foto_perfil'] = salvarFotoClienteFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null, $cliente['foto_perfil'] ?? null);
 
             $sql = "UPDATE clientes
                     SET nome = :nome, cpf = :cpf, telefone = :telefone, email = :email, endereco = :endereco, foto_perfil = :foto_perfil
@@ -100,8 +100,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             height="96"
                         >
                         <label for="foto_perfil" class="form-label">Trocar foto de perfil</label>
-                        <input type="file" name="foto_perfil" id="foto_perfil" class="form-control" accept="image/jpeg,image/png,image/webp">
-                        <div class="form-text">Deixe em branco para manter a foto atual. Formatos aceitos: JPG, PNG ou WEBP. Tamanho maximo: 2 MB.</div>
+                        <input type="file" name="foto_perfil" id="foto_perfil" class="form-control" accept="image/jpeg,image/png,image/webp,image/*">
+                        <input type="hidden" name="foto_camera" id="foto_camera">
+                        <div class="form-text">Selecione uma imagem dos arquivos/galeria ou use a camera. Deixe em branco para manter a foto atual.</div>
+
+                        <div class="border rounded p-3 mt-3">
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="abrir_camera">Abrir camera</button>
+                                <button type="button" class="btn btn-outline-success btn-sm d-none" id="capturar_foto">Tirar foto</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="fechar_camera">Fechar camera</button>
+                            </div>
+                            <video id="camera_video" class="w-100 rounded d-none bg-dark" autoplay playsinline style="max-width: 420px;"></video>
+                            <canvas id="camera_canvas" class="d-none"></canvas>
+                            <img id="camera_preview" class="rounded-circle object-fit-cover d-none mt-3" width="120" height="120" alt="Previa da foto capturada">
+                            <div id="camera_aviso" class="form-text text-danger d-none mt-2"></div>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <label for="nome" class="form-label">Nome</label>
@@ -135,5 +148,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const botaoAbrirCamera = document.getElementById('abrir_camera');
+const botaoCapturarFoto = document.getElementById('capturar_foto');
+const botaoFecharCamera = document.getElementById('fechar_camera');
+const videoCamera = document.getElementById('camera_video');
+const canvasCamera = document.getElementById('camera_canvas');
+const previewCamera = document.getElementById('camera_preview');
+const inputFotoCamera = document.getElementById('foto_camera');
+const inputFotoPerfil = document.getElementById('foto_perfil');
+const avisoCamera = document.getElementById('camera_aviso');
+let streamCamera = null;
+
+function mostrarAvisoCamera(mensagem) {
+    avisoCamera.textContent = mensagem;
+    avisoCamera.classList.toggle('d-none', mensagem === '');
+}
+
+function pararCamera() {
+    if (streamCamera) {
+        streamCamera.getTracks().forEach((track) => track.stop());
+        streamCamera = null;
+    }
+
+    videoCamera.classList.add('d-none');
+    botaoCapturarFoto.classList.add('d-none');
+    botaoFecharCamera.classList.add('d-none');
+}
+
+botaoAbrirCamera.addEventListener('click', async () => {
+    mostrarAvisoCamera('');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarAvisoCamera('Este navegador nao permite abrir a camera.');
+        return;
+    }
+
+    try {
+        streamCamera = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        videoCamera.srcObject = streamCamera;
+        videoCamera.classList.remove('d-none');
+        botaoCapturarFoto.classList.remove('d-none');
+        botaoFecharCamera.classList.remove('d-none');
+    } catch (error) {
+        mostrarAvisoCamera('Nao foi possivel acessar a camera. Verifique a permissao do navegador.');
+    }
+});
+
+botaoCapturarFoto.addEventListener('click', () => {
+    canvasCamera.width = videoCamera.videoWidth;
+    canvasCamera.height = videoCamera.videoHeight;
+    canvasCamera.getContext('2d').drawImage(videoCamera, 0, 0);
+
+    const foto = canvasCamera.toDataURL('image/jpeg', 0.9);
+    inputFotoCamera.value = foto;
+    inputFotoPerfil.value = '';
+    previewCamera.src = foto;
+    previewCamera.classList.remove('d-none');
+    pararCamera();
+});
+
+botaoFecharCamera.addEventListener('click', pararCamera);
+
+inputFotoPerfil.addEventListener('change', () => {
+    if (inputFotoPerfil.files.length > 0) {
+        inputFotoCamera.value = '';
+        previewCamera.classList.add('d-none');
+    }
+});
+</script>
 </body>
 </html>

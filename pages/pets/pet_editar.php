@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['admin', 'funcionario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/cliente_foto.php';
+garantirCampoFotoTabela($conexao, 'pets');
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -12,7 +14,7 @@ if ($id <= 0) {
 }
 
 $clientes = $conexao->query("SELECT id, nome, cpf FROM clientes ORDER BY nome")->fetchAll();
-$stmt = $conexao->prepare("SELECT id, id_cliente, nome, especie, raca, idade, peso, status_adocao FROM pets WHERE id = :id");
+$stmt = $conexao->prepare("SELECT id, id_cliente, nome, especie, raca, idade, peso, status_adocao, foto_perfil FROM pets WHERE id = :id");
 $stmt->execute(['id' => $id]);
 $pet = $stmt->fetch();
 
@@ -36,9 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Tutor, nome e especie sao obrigatorios.';
     } else {
         try {
+            $pet['foto_perfil'] = salvarFotoPerfilFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null, 'pets', $pet['foto_perfil'] ?? null);
+
             $sql = "UPDATE pets
                     SET id_cliente = :id_cliente, nome = :nome, especie = :especie, raca = :raca,
-                        idade = :idade, peso = :peso, status_adocao = :status_adocao
+                        idade = :idade, peso = :peso, status_adocao = :status_adocao, foto_perfil = :foto_perfil
                     WHERE id = :id";
             $stmt = $conexao->prepare($sql);
             $stmt->execute([
@@ -49,11 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'idade' => $pet['idade'],
                 'peso' => $pet['peso'],
                 'status_adocao' => $pet['status_adocao'],
+                'foto_perfil' => $pet['foto_perfil'],
                 'id' => $id,
             ]);
 
             header("Location: pets.php?sucesso=editar");
             exit;
+        } catch (RuntimeException $e) {
+            $erro = $e->getMessage();
         } catch (PDOException $e) {
             $erro = 'Nao foi possivel atualizar o pet.';
         }
@@ -87,8 +94,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label d-block">Foto atual</label>
+                        <img
+                            src="<?php echo htmlspecialchars(caminhoApp(fotoCliente($pet['foto_perfil'] ?? null))); ?>"
+                            alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                            class="rounded-circle object-fit-cover mb-3"
+                            width="96"
+                            height="96"
+                        >
+                        <label for="foto_perfil" class="form-label">Trocar foto do pet</label>
+                        <input type="file" name="foto_perfil" id="foto_perfil" class="form-control" accept="image/jpeg,image/png,image/webp,image/*">
+                        <input type="hidden" name="foto_camera" id="foto_camera">
+                        <div class="form-text">Selecione uma imagem dos arquivos/galeria ou use a camera. Deixe em branco para manter a foto atual.</div>
+
+                        <div class="border rounded p-3 mt-3">
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="abrir_camera">Abrir camera</button>
+                                <button type="button" class="btn btn-outline-success btn-sm d-none" id="capturar_foto">Tirar foto</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="fechar_camera">Fechar camera</button>
+                            </div>
+                            <video id="camera_video" class="w-100 rounded d-none bg-dark" autoplay playsinline style="max-width: 420px;"></video>
+                            <canvas id="camera_canvas" class="d-none"></canvas>
+                            <img id="camera_preview" class="rounded-circle object-fit-cover d-none mt-3" width="120" height="120" alt="Previa da foto capturada">
+                            <div id="camera_aviso" class="form-text text-danger d-none mt-2"></div>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <label for="buscar_tutor" class="form-label">Buscar tutor</label>
                         <input type="search" id="buscar_tutor" class="form-control mb-2" placeholder="Digite nome ou CPF do tutor">
@@ -144,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo caminhoApp('assets/js/foto-camera.js'); ?>"></script>
 <script>
 const campoBuscaTutor = document.getElementById('buscar_tutor');
 const selectTutor = document.getElementById('id_cliente');

@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['admin', 'funcionario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/cliente_foto.php';
+garantirCampoFotoTabela($conexao, 'pets');
 
 $clientes = $conexao->query("SELECT id, nome, cpf FROM clientes ORDER BY nome")->fetchAll();
 $erro = '';
@@ -14,6 +16,7 @@ $pet = [
     'idade' => '',
     'peso' => '',
     'status_adocao' => 0,
+    'foto_perfil' => null,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -29,13 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Tutor, nome e especie sao obrigatorios.';
     } else {
         try {
-            $sql = "INSERT INTO pets (id_cliente, nome, especie, raca, idade, peso, status_adocao)
-                    VALUES (:id_cliente, :nome, :especie, :raca, :idade, :peso, :status_adocao)";
+            $pet['foto_perfil'] = salvarFotoPerfilFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null, 'pets');
+
+            $sql = "INSERT INTO pets (id_cliente, nome, especie, raca, idade, peso, status_adocao, foto_perfil)
+                    VALUES (:id_cliente, :nome, :especie, :raca, :idade, :peso, :status_adocao, :foto_perfil)";
             $stmt = $conexao->prepare($sql);
             $stmt->execute($pet);
 
             header("Location: pets.php?sucesso=cadastrar");
             exit;
+        } catch (RuntimeException $e) {
+            $erro = $e->getMessage();
         } catch (PDOException $e) {
             $erro = 'Nao foi possivel cadastrar o pet.';
         }
@@ -73,8 +80,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="row g-3">
+                    <div class="col-12">
+                        <label for="foto_perfil" class="form-label">Foto do pet</label>
+                        <input type="file" name="foto_perfil" id="foto_perfil" class="form-control" accept="image/jpeg,image/png,image/webp,image/*">
+                        <input type="hidden" name="foto_camera" id="foto_camera">
+                        <div class="form-text">Selecione uma imagem dos arquivos/galeria ou use a camera. Tamanho maximo: 2 MB.</div>
+
+                        <div class="border rounded p-3 mt-3">
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="abrir_camera">Abrir camera</button>
+                                <button type="button" class="btn btn-outline-success btn-sm d-none" id="capturar_foto">Tirar foto</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="fechar_camera">Fechar camera</button>
+                            </div>
+                            <video id="camera_video" class="w-100 rounded d-none bg-dark" autoplay playsinline style="max-width: 420px;"></video>
+                            <canvas id="camera_canvas" class="d-none"></canvas>
+                            <img id="camera_preview" class="rounded-circle object-fit-cover d-none mt-3" width="120" height="120" alt="Previa da foto capturada">
+                            <div id="camera_aviso" class="form-text text-danger d-none mt-2"></div>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <label for="buscar_tutor" class="form-label">Buscar tutor</label>
                         <input type="search" id="buscar_tutor" class="form-control mb-2" placeholder="Digite nome ou CPF do tutor">
@@ -131,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo caminhoApp('assets/js/foto-camera.js'); ?>"></script>
 <script>
 const campoBuscaTutor = document.getElementById('buscar_tutor');
 const selectTutor = document.getElementById('id_cliente');

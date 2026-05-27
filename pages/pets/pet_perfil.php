@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/cliente_foto.php';
+garantirCampoFotoTabela($conexao, 'pets');
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -70,6 +72,13 @@ $agendamentos = $stmt->fetchAll();
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Dados do pet</h2>
+                    <img
+                        src="<?php echo htmlspecialchars(caminhoApp(fotoCliente($pet['foto_perfil'] ?? null))); ?>"
+                        alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                        class="rounded-circle object-fit-cover mb-3"
+                        width="120"
+                        height="120"
+                    >
                     <p class="mb-2"><strong>Especie:</strong> <?php echo htmlspecialchars($pet['especie']); ?></p>
                     <p class="mb-2"><strong>Raca:</strong> <?php echo htmlspecialchars($pet['raca'] ?? ''); ?></p>
                     <p class="mb-2"><strong>Idade:</strong> <?php echo htmlspecialchars((string) ($pet['idade'] ?? '')); ?></p>

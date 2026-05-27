@@ -3,22 +3,20 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['admin']);
 
 require_once __DIR__ . '/../../config/conexao.php';
-require_once __DIR__ . '/../../includes/cliente_foto.php';
-garantirCampoFotoTabela($conexao, 'pets');
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 
 if ($id <= 0) {
-    header("Location: pets.php");
+    header("Location: servicos.php");
     exit;
 }
 
-$stmt = $conexao->prepare("SELECT id, nome, especie, foto_perfil FROM pets WHERE id = :id");
+$stmt = $conexao->prepare("SELECT id, nome, preco FROM servicos WHERE id = :id");
 $stmt->execute(['id' => $id]);
-$pet = $stmt->fetch();
+$servico = $stmt->fetch();
 
-if (!$pet) {
-    header("Location: pets.php");
+if (!$servico) {
+    header("Location: servicos.php");
     exit;
 }
 
@@ -26,14 +24,13 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $stmt = $conexao->prepare("DELETE FROM pets WHERE id = :id");
+        $stmt = $conexao->prepare("DELETE FROM servicos WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        excluirFotoPerfil($pet['foto_perfil'] ?? null);
 
-        header("Location: pets.php?sucesso=excluir");
+        header("Location: servicos.php?sucesso=excluir");
         exit;
     } catch (PDOException $e) {
-        $erro = 'Nao foi possivel excluir este pet. Verifique se existem consultas ou agendamentos vinculados a ele.';
+        $erro = 'Nao foi possivel excluir este servico. Verifique se existem agendamentos vinculados a ele.';
     }
 }
 ?>
@@ -42,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetLife - Excluir Pet</title>
+    <title>PetLife - Excluir Servico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -52,19 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container mt-5">
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <h1 class="mb-3">Excluir pet</h1>
+            <h1 class="mb-3">Excluir servico</h1>
 
             <?php if ($erro !== ''): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($erro); ?></div>
             <?php endif; ?>
 
-            <p>Tem certeza que deseja excluir o pet <strong><?php echo htmlspecialchars($pet['nome']); ?></strong>?</p>
-            <p class="text-muted">Especie: <?php echo htmlspecialchars($pet['especie']); ?></p>
+            <p>Tem certeza que deseja excluir o servico <strong><?php echo htmlspecialchars($servico['nome']); ?></strong>?</p>
+            <p class="text-muted">Preco: R$ <?php echo htmlspecialchars(number_format((float) $servico['preco'], 2, ',', '.')); ?></p>
 
             <form method="POST">
-                <input type="hidden" name="id" value="<?php echo $pet['id']; ?>">
+                <input type="hidden" name="id" value="<?php echo $servico['id']; ?>">
                 <button type="submit" class="btn btn-danger">Confirmar exclusao</button>
-                <a href="pets.php" class="btn btn-outline-secondary">Cancelar</a>
+                <a href="servicos.php" class="btn btn-outline-secondary">Cancelar</a>
             </form>
         </div>
     </div>

@@ -34,6 +34,7 @@ CREATE TABLE pets (
     raca VARCHAR(50),
     idade INT,
     peso DECIMAL(5,2),
+    foto_perfil VARCHAR(255),
     status_adocao BOOLEAN DEFAULT FALSE, -- Funcionalidade de Adoção
     FOREIGN KEY (id_cliente) REFERENCES clientes(id) ON DELETE CASCADE
 );
@@ -45,6 +46,7 @@ CREATE TABLE funcionarios (
     cargo VARCHAR(50) NOT NULL, -- Veterinário, Tosador, Atendente
     crmv VARCHAR(20), -- Apenas para veterinários
     telefone VARCHAR(20),
+    foto_perfil VARCHAR(255),
     data_admissao DATE
 );
 

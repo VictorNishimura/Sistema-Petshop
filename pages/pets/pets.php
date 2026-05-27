@@ -3,11 +3,13 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/cliente_foto.php';
+garantirCampoFotoTabela($conexao, 'pets');
 
 $podeEditar = usuarioPode(['admin', 'funcionario']);
 $podeExcluir = usuarioPode(['admin']);
 
-$sql = "SELECT p.id, p.nome, p.especie, p.raca, p.idade, p.peso, p.status_adocao, c.nome AS cliente_nome
+$sql = "SELECT p.id, p.nome, p.especie, p.raca, p.idade, p.peso, p.status_adocao, p.foto_perfil, c.nome AS cliente_nome
         FROM pets p
         INNER JOIN clientes c ON c.id = p.id_cliente
         ORDER BY p.nome";
@@ -52,6 +54,7 @@ $pets = $stmt->fetchAll();
                     <thead>
                         <tr>
                             <th>Nome</th>
+                            <th>Foto</th>
                             <th>Especie</th>
                             <th>Raca</th>
                             <th>Idade</th>
@@ -64,13 +67,22 @@ $pets = $stmt->fetchAll();
                     <tbody>
                         <?php if (count($pets) === 0): ?>
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">Nenhum pet cadastrado.</td>
+                                <td colspan="9" class="text-center text-muted py-4">Nenhum pet cadastrado.</td>
                             </tr>
                         <?php endif; ?>
 
                         <?php foreach ($pets as $pet): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($pet['nome']); ?></td>
+                                <td>
+                                    <img
+                                        src="<?php echo htmlspecialchars(caminhoApp(fotoCliente($pet['foto_perfil'] ?? null))); ?>"
+                                        alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                                        class="rounded-circle object-fit-cover"
+                                        width="48"
+                                        height="48"
+                                    >
+                                </td>
                                 <td><?php echo htmlspecialchars($pet['especie']); ?></td>
                                 <td><?php echo htmlspecialchars($pet['raca'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($pet['idade'] ?? ''); ?></td>

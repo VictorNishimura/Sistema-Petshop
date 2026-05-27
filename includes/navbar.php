@@ -19,6 +19,14 @@ $paginaAtual = basename($_SERVER['PHP_SELF']);
                 <li class="nav-item">
                     <a class="nav-link <?php echo in_array($paginaAtual, ['pets.php', 'pet_cadastrar.php', 'pet_editar.php', 'pet_excluir.php', 'pet_perfil.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/pets/pets.php'); ?>">Pets</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($paginaAtual, ['servicos.php', 'servico_cadastrar.php', 'servico_editar.php', 'servico_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/servicos/servicos.php'); ?>">Servicos</a>
+                </li>
+                <?php if (usuarioPode(['admin'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo in_array($paginaAtual, ['funcionarios.php', 'funcionario_cadastrar.php', 'funcionario_editar.php', 'funcionario_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/funcionarios/funcionarios.php'); ?>">Funcionarios</a>
+                    </li>
+                <?php endif; ?>
             </ul>
 
             <span class="navbar-text text-white me-3">
