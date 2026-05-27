@@ -1,4 +1,4 @@
-USE petlife_db;
+USE DB_Petlife;
 
 -- 1. TABELA DE USUÁRIOS (Sistema de Login e Segurança)
 CREATE TABLE usuarios (

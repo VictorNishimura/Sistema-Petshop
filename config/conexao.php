@@ -1,7 +1,7 @@
 <?php
 // Configurações do Banco de Dados
 $host = 'localhost';
-$db_name = 'petlife_db';
+$db_name = 'DB_Petlife';
 $username = 'root'; // Usuário padrão do XAMPP/Laragon
 $password = '';     // Senha padrão do XAMPP (vazia) ou 'root' no Laragon
 
