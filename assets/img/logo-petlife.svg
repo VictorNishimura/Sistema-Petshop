@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-label="PetLife">
+  <rect width="720" height="420" fill="#ffffff"/>
+  <g transform="translate(230 35)" fill="none" stroke="#082f57" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M130 240C50 190 5 130 18 72 31 13 108-8 153 50c12 16 20 36 25 58 11-16 29-29 52-34 55-12 103 33 97 90-5 51-46 83-96 114"/>
+    <path d="M72 165c-27-49-19-88 18-118"/>
+    <path d="M172 132c25 20 55 20 79 0"/>
+    <path d="M196 70c5-8 16-8 21 0"/>
+    <path d="M247 85c20 2 30 13 28 28-2 17-18 31-42 41"/>
+    <path d="M149 231c8-32 30-45 53-42 22 3 38 21 42 48"/>
+    <path d="M123 248c11-11 26-11 37 0"/>
+    <path d="M169 256c15-20 35-21 51-1"/>
+  </g>
+  <g transform="translate(390 145)">
+    <path d="M15 85c-8-52 18-92 73-115 22 40 20 85-6 121-23 31-52 30-67-6z" fill="#ff970f"/>
+    <path d="M50 35c5-7 15-7 20 0" fill="none" stroke="#082f57" stroke-width="6" stroke-linecap="round"/>
+    <path d="M112 35c5-7 15-7 20 0" fill="none" stroke="#082f57" stroke-width="6" stroke-linecap="round"/>
+    <path d="M76 69c13 16 34 16 47 0" fill="none" stroke="#082f57" stroke-width="6" stroke-linecap="round"/>
+    <path d="M95 55l10 8-10 8-10-8z" fill="#082f57"/>
+  </g>
+  <text x="105" y="335" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="700" fill="#082f57">Pet</text>
+  <text x="300" y="335" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="700" fill="#ff970f">Life</text>
+  <line x1="135" y1="370" x2="245" y2="370" stroke="#082f57" stroke-width="3"/>
+  <text x="265" y="381" font-family="Arial, Helvetica, sans-serif" font-size="25" letter-spacing="9" fill="#082f57">SISTEMA PARA PET SHOP</text>
+  <line x1="555" y1="370" x2="655" y2="370" stroke="#082f57" stroke-width="3"/>
+</svg>
