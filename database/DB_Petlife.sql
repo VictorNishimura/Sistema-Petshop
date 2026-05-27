@@ -1,3 +1,4 @@
+CREATE DATABASE DB_Petlife;
 USE DB_Petlife;
 
 -- 1. TABELA DE USUÁRIOS (Sistema de Login e Segurança)
@@ -20,6 +21,7 @@ CREATE TABLE clientes (
     telefone VARCHAR(20),
     email VARCHAR(100),
     endereco TEXT,
+    foto_perfil VARCHAR(255),
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

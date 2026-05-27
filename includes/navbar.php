@@ -1,0 +1,30 @@
+<?php
+$paginaAtual = basename($_SERVER['PHP_SELF']);
+?>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="<?php echo caminhoApp('dashboard.php'); ?>">PetLife Admin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link <?php echo $paginaAtual === 'dashboard.php' ? 'active' : ''; ?>" href="<?php echo caminhoApp('dashboard.php'); ?>">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($paginaAtual, ['clientes.php', 'cliente_cadastrar.php', 'cliente_editar.php', 'cliente_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/clientes/clientes.php'); ?>">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($paginaAtual, ['pets.php', 'pet_cadastrar.php', 'pet_editar.php', 'pet_excluir.php', 'pet_perfil.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/pets/pets.php'); ?>">Pets</a>
+                </li>
+            </ul>
+
+            <span class="navbar-text text-white me-3">
+                Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuario'); ?>!
+            </span>
+            <a href="<?php echo caminhoApp('logout.php'); ?>" class="btn btn-outline-light btn-sm">Sair</a>
+        </div>
+    </div>
+</nav>
