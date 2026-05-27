@@ -90,14 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST">
                 <div class="row g-3">
                     <div class="col-md-6">
+                        <label for="buscar_tutor" class="form-label">Buscar tutor</label>
+                        <input type="search" id="buscar_tutor" class="form-control mb-2" placeholder="Digite nome ou CPF do tutor">
                         <label for="id_cliente" class="form-label">Tutor</label>
                         <select name="id_cliente" id="id_cliente" class="form-select" required>
                             <?php foreach ($clientes as $cliente): ?>
-                                <option value="<?php echo $cliente['id']; ?>" <?php echo (int) $pet['id_cliente'] === (int) $cliente['id'] ? 'selected' : ''; ?>>
+                                <option
+                                    value="<?php echo $cliente['id']; ?>"
+                                    data-busca="<?php echo htmlspecialchars(strtolower($cliente['nome'] . ' ' . $cliente['cpf'])); ?>"
+                                    <?php echo (int) $pet['id_cliente'] === (int) $cliente['id'] ? 'selected' : ''; ?>
+                                >
                                     <?php echo htmlspecialchars($cliente['nome'] . ' - ' . $cliente['cpf']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <div id="sem_resultado_tutor" class="form-text text-danger d-none">Nenhum tutor encontrado.</div>
                     </div>
                     <div class="col-md-6">
                         <label for="nome" class="form-label">Nome</label>
@@ -137,5 +144,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const campoBuscaTutor = document.getElementById('buscar_tutor');
+const selectTutor = document.getElementById('id_cliente');
+const mensagemSemResultado = document.getElementById('sem_resultado_tutor');
+
+campoBuscaTutor.addEventListener('input', () => {
+    const termo = campoBuscaTutor.value.trim().toLowerCase();
+    let encontrou = false;
+
+    Array.from(selectTutor.options).forEach((option) => {
+        const combina = option.dataset.busca.includes(termo);
+        option.hidden = !combina;
+        encontrou = encontrou || combina;
+    });
+
+    if (selectTutor.selectedOptions[0] && selectTutor.selectedOptions[0].hidden) {
+        selectTutor.value = '';
+    }
+
+    mensagemSemResultado.classList.toggle('d-none', encontrou || termo === '');
+});
+</script>
 </body>
 </html>
