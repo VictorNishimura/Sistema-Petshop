@@ -4,6 +4,7 @@ USE DB_Petlife;
 -- 1. TABELA DE USUÁRIOS (Sistema de Login e Segurança)
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    id_funcionario INT NULL,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     senha VARCHAR(255) NOT NULL, -- Aqui usaremos password_hash no PHP

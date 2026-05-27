@@ -4,7 +4,9 @@ exigirPermissao(['admin']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/usuario_funcionario.php';
 garantirCampoFotoTabela($conexao, 'funcionarios');
+garantirCampoUsuarioFuncionario($conexao);
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 
@@ -26,6 +28,7 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        excluirUsuarioFuncionario($conexao, $id);
         $stmt = $conexao->prepare("DELETE FROM funcionarios WHERE id = :id");
         $stmt->execute(['id' => $id]);
         excluirFotoPerfil($funcionario['foto_perfil'] ?? null);

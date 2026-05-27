@@ -4,7 +4,9 @@ exigirPermissao(['admin']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/usuario_funcionario.php';
 garantirCampoFotoTabela($conexao, 'funcionarios');
+garantirCampoUsuarioFuncionario($conexao);
 
 $erro = '';
 $funcionario = [
@@ -15,6 +17,13 @@ $funcionario = [
     'data_admissao' => '',
     'foto_perfil' => null,
 ];
+$acesso = [
+    'criar_usuario' => false,
+    'email' => '',
+    'senha' => '',
+    'pergunta_secreta' => '',
+    'resposta_secreta' => '',
+];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $funcionario['nome'] = trim($_POST['nome'] ?? '');
@@ -22,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $funcionario['crmv'] = trim($_POST['crmv'] ?? '');
     $funcionario['telefone'] = trim($_POST['telefone'] ?? '');
     $funcionario['data_admissao'] = trim($_POST['data_admissao'] ?? '');
+    $acesso['criar_usuario'] = isset($_POST['criar_usuario']);
+    $acesso['email'] = trim($_POST['email_usuario'] ?? '');
+    $acesso['senha'] = trim($_POST['senha_usuario'] ?? '');
+    $acesso['pergunta_secreta'] = trim($_POST['pergunta_secreta'] ?? '');
+    $acesso['resposta_secreta'] = trim($_POST['resposta_secreta'] ?? '');
 
     if ($funcionario['cargo'] !== 'Veterinario') {
         $funcionario['crmv'] = '';
@@ -31,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Nome e cargo sao obrigatorios.';
     } else {
         try {
+            $conexao->beginTransaction();
             $funcionario['foto_perfil'] = salvarFotoPerfilFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null, 'funcionarios');
 
             $sql = "INSERT INTO funcionarios (nome, cargo, crmv, telefone, data_admissao, foto_perfil)
@@ -44,12 +59,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'data_admissao' => $funcionario['data_admissao'] !== '' ? $funcionario['data_admissao'] : null,
                 'foto_perfil' => $funcionario['foto_perfil'],
             ]);
+            $idFuncionario = (int) $conexao->lastInsertId();
+
+            if ($acesso['criar_usuario']) {
+                criarUsuarioFuncionario($conexao, $idFuncionario, $funcionario['nome'], $funcionario['cargo'], $acesso);
+            }
+
+            $conexao->commit();
 
             header("Location: funcionarios.php?sucesso=cadastrar");
             exit;
         } catch (RuntimeException $e) {
+            if ($conexao->inTransaction()) {
+                $conexao->rollBack();
+            }
             $erro = $e->getMessage();
         } catch (PDOException $e) {
+            if ($conexao->inTransaction()) {
+                $conexao->rollBack();
+            }
             $erro = 'Nao foi possivel cadastrar o funcionario.';
         }
     }
@@ -129,6 +157,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="data_admissao" class="form-label">Data de admissao</label>
                         <input type="date" name="data_admissao" id="data_admissao" class="form-control" value="<?php echo htmlspecialchars($funcionario['data_admissao']); ?>">
                     </div>
+                    <div class="col-12">
+                        <hr>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" name="criar_usuario" id="criar_usuario" class="form-check-input" value="1" <?php echo $acesso['criar_usuario'] ? 'checked' : ''; ?>>
+                            <label for="criar_usuario" class="form-check-label">Criar acesso ao sistema para este funcionario</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-none" id="campos_acesso">
+                        <div class="alert alert-info mb-3">
+                            Nivel automatico: <strong id="nivel_acesso_texto">funcionario</strong>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="email_usuario" class="form-label">E-mail de acesso</label>
+                                <input type="email" name="email_usuario" id="email_usuario" class="form-control" value="<?php echo htmlspecialchars($acesso['email']); ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="senha_usuario" class="form-label">Senha</label>
+                                <input type="password" name="senha_usuario" id="senha_usuario" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pergunta_secreta" class="form-label">Pergunta secreta</label>
+                                <input type="text" name="pergunta_secreta" id="pergunta_secreta" class="form-control" value="<?php echo htmlspecialchars($acesso['pergunta_secreta']); ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="resposta_secreta" class="form-label">Resposta secreta</label>
+                                <input type="text" name="resposta_secreta" id="resposta_secreta" class="form-control" value="<?php echo htmlspecialchars($acesso['resposta_secreta']); ?>">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4">
@@ -146,6 +204,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 const selectCargo = document.getElementById('cargo');
 const campoCrmv = document.getElementById('campo_crmv');
 const inputCrmv = document.getElementById('crmv');
+const checkboxCriarUsuario = document.getElementById('criar_usuario');
+const camposAcesso = document.getElementById('campos_acesso');
+const nivelAcessoTexto = document.getElementById('nivel_acesso_texto');
 
 function atualizarCampoCrmv() {
     const veterinario = selectCargo.value === 'Veterinario';
@@ -156,8 +217,28 @@ function atualizarCampoCrmv() {
     }
 }
 
+function nivelPorCargo(cargo) {
+    if (cargo === 'Veterinario') {
+        return 'veterinario';
+    }
+
+    if (cargo === 'Gerente') {
+        return 'admin';
+    }
+
+    return 'funcionario';
+}
+
+function atualizarAcesso() {
+    camposAcesso.classList.toggle('d-none', !checkboxCriarUsuario.checked);
+    nivelAcessoTexto.textContent = nivelPorCargo(selectCargo.value);
+}
+
 selectCargo.addEventListener('change', atualizarCampoCrmv);
+selectCargo.addEventListener('change', atualizarAcesso);
+checkboxCriarUsuario.addEventListener('change', atualizarAcesso);
 atualizarCampoCrmv();
+atualizarAcesso();
 </script>
 </body>
 </html>

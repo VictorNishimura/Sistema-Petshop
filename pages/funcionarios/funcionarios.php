@@ -4,9 +4,16 @@ exigirPermissao(['admin']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/usuario_funcionario.php';
 garantirCampoFotoTabela($conexao, 'funcionarios');
+garantirCampoUsuarioFuncionario($conexao);
 
-$stmt = $conexao->query("SELECT id, nome, cargo, crmv, telefone, data_admissao, foto_perfil FROM funcionarios ORDER BY nome");
+$stmt = $conexao->query(
+    "SELECT f.id, f.nome, f.cargo, f.crmv, f.telefone, f.data_admissao, f.foto_perfil, u.nivel AS usuario_nivel
+     FROM funcionarios f
+     LEFT JOIN usuarios u ON u.id_funcionario = f.id
+     ORDER BY f.nome"
+);
 $funcionarios = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -46,13 +53,14 @@ $funcionarios = $stmt->fetchAll();
                             <th>CRMV</th>
                             <th>Telefone</th>
                             <th>Admissao</th>
+                            <th>Acesso</th>
                             <th class="text-end">Acoes</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (count($funcionarios) === 0): ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">Nenhum funcionario cadastrado.</td>
+                                <td colspan="8" class="text-center text-muted py-4">Nenhum funcionario cadastrado.</td>
                             </tr>
                         <?php endif; ?>
 
@@ -73,6 +81,13 @@ $funcionarios = $stmt->fetchAll();
                                 <td><?php echo htmlspecialchars($funcionario['telefone'] ?? ''); ?></td>
                                 <td>
                                     <?php echo $funcionario['data_admissao'] ? htmlspecialchars(date('d/m/Y', strtotime($funcionario['data_admissao']))) : ''; ?>
+                                </td>
+                                <td>
+                                    <?php if ($funcionario['usuario_nivel']): ?>
+                                        <span class="badge text-bg-success"><?php echo htmlspecialchars($funcionario['usuario_nivel']); ?></span>
+                                    <?php else: ?>
+                                        <span class="badge text-bg-secondary">Sem acesso</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-end">
                                     <a href="funcionario_editar.php?id=<?php echo $funcionario['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>
