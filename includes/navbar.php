@@ -22,6 +22,9 @@ $paginaAtual = basename($_SERVER['PHP_SELF']);
                 <li class="nav-item">
                     <a class="nav-link <?php echo in_array($paginaAtual, ['servicos.php', 'servico_cadastrar.php', 'servico_editar.php', 'servico_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/servicos/servicos.php'); ?>">Servicos</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($paginaAtual, ['agendamentos.php', 'agendamento_cadastrar.php', 'agendamento_editar.php', 'agendamento_cancelar.php', 'agendamento_concluir.php', 'agendamento_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/agendamentos/agendamentos.php'); ?>">Agendamentos</a>
+                </li>
                 <?php if (usuarioPode(['admin'])): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo in_array($paginaAtual, ['funcionarios.php', 'funcionario_cadastrar.php', 'funcionario_editar.php', 'funcionario_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/funcionarios/funcionarios.php'); ?>">Funcionarios</a>

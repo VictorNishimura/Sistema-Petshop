@@ -21,10 +21,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Se o usuário existir, vamos verificar a senha
     // Nota: Em produção usaríamos password_verify, para o trabalho acadêmico direto pode ser comparação simples se as senhas forem salvas em texto limpo para testes.
     if ($usuario && $senha === $usuario['senha']) {
+        $idFuncionario = $usuario['id_funcionario'] ?? null;
+
+        if (!$idFuncionario) {
+            $stmtFuncionario = $conexao->prepare("SELECT id FROM funcionarios WHERE nome = :nome LIMIT 1");
+            $stmtFuncionario->execute(['nome' => $usuario['nome']]);
+            $idFuncionario = $stmtFuncionario->fetchColumn() ?: null;
+        }
+
         // LOGIN COM SUCESSO: Salva os dados na Sessão
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nome'] = $usuario['nome'];
         $_SESSION['usuario_nivel'] = $usuario['nivel'];
+        $_SESSION['usuario_id_funcionario'] = $idFuncionario;
 
         // Redireciona para o Painel Principal
         header("Location: dashboard.php");

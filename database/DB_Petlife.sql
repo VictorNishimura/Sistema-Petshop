@@ -33,9 +33,19 @@ CREATE TABLE pets (
     nome VARCHAR(100) NOT NULL,
     especie VARCHAR(50) NOT NULL, -- Cão, Gato, etc.
     raca VARCHAR(50),
+    sexo VARCHAR(10),
+    data_nascimento DATE,
     idade INT,
+    pelagem VARCHAR(100),
     peso DECIMAL(5,2),
     foto_perfil VARCHAR(255),
+    vacinacao_atualizada BOOLEAN DEFAULT FALSE,
+    ultima_aplicacao_parasitas DATE,
+    alergias_restricoes TEXT,
+    condicoes_especiais TEXT,
+    temperamento VARCHAR(100),
+    reacao_animais VARCHAR(100),
+    observacoes_gerais TEXT,
     status_adocao BOOLEAN DEFAULT FALSE, -- Funcionalidade de Adoção
     FOREIGN KEY (id_cliente) REFERENCES clientes(id) ON DELETE CASCADE
 );
@@ -74,11 +84,13 @@ CREATE TABLE agendamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_pet INT NOT NULL,
     id_servico INT NOT NULL,
+    id_funcionario INT,
     data_hora DATETIME NOT NULL,
     status ENUM('Agendado', 'Concluído', 'Cancelado') DEFAULT 'Agendado',
     observacoes TEXT,
     FOREIGN KEY (id_pet) REFERENCES pets(id),
-    FOREIGN KEY (id_servico) REFERENCES servicos(id)
+    FOREIGN KEY (id_servico) REFERENCES servicos(id),
+    FOREIGN KEY (id_funcionario) REFERENCES funcionarios(id)
 );
 
 -- 8. TABELA DE CONSULTAS (Funcionalidade Temática: Veterinária)

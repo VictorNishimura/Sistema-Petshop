@@ -4,7 +4,9 @@ exigirPermissao(['admin', 'funcionario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/pet.php';
 garantirCampoFotoTabela($conexao, 'pets');
+garantirCamposDetalhesPet($conexao);
 
 $clientes = $conexao->query("SELECT id, nome, cpf FROM clientes ORDER BY nome")->fetchAll();
 $erro = '';
@@ -13,8 +15,18 @@ $pet = [
     'nome' => '',
     'especie' => '',
     'raca' => '',
+    'sexo' => '',
+    'data_nascimento' => '',
     'idade' => '',
+    'pelagem' => '',
     'peso' => '',
+    'vacinacao_atualizada' => 0,
+    'ultima_aplicacao_parasitas' => '',
+    'alergias_restricoes' => '',
+    'condicoes_especiais' => '',
+    'temperamento' => '',
+    'reacao_animais' => '',
+    'observacoes_gerais' => '',
     'status_adocao' => 0,
     'foto_perfil' => null,
 ];
@@ -24,20 +36,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pet['nome'] = trim($_POST['nome'] ?? '');
     $pet['especie'] = trim($_POST['especie'] ?? '');
     $pet['raca'] = trim($_POST['raca'] ?? '');
+    $pet['sexo'] = trim($_POST['sexo'] ?? '');
+    $pet['data_nascimento'] = trim($_POST['data_nascimento'] ?? '');
     $pet['idade'] = $_POST['idade'] !== '' ? (int) $_POST['idade'] : null;
+    $pet['pelagem'] = trim($_POST['pelagem'] ?? '');
     $pet['peso'] = $_POST['peso'] !== '' ? (float) str_replace(',', '.', $_POST['peso']) : null;
+    $pet['vacinacao_atualizada'] = isset($_POST['vacinacao_atualizada']) ? 1 : 0;
+    $pet['ultima_aplicacao_parasitas'] = trim($_POST['ultima_aplicacao_parasitas'] ?? '');
+    $pet['alergias_restricoes'] = trim($_POST['alergias_restricoes'] ?? '');
+    $pet['condicoes_especiais'] = trim($_POST['condicoes_especiais'] ?? '');
+    $pet['temperamento'] = trim($_POST['temperamento'] ?? '');
+    $pet['reacao_animais'] = trim($_POST['reacao_animais'] ?? '');
+    $pet['observacoes_gerais'] = trim($_POST['observacoes_gerais'] ?? '');
     $pet['status_adocao'] = isset($_POST['status_adocao']) ? 1 : 0;
 
-    if ($pet['id_cliente'] <= 0 || $pet['nome'] === '' || $pet['especie'] === '') {
-        $erro = 'Tutor, nome e especie sao obrigatorios.';
+    if ($pet['id_cliente'] <= 0 || $pet['nome'] === '' || $pet['especie'] === '' || $pet['sexo'] === '') {
+        $erro = 'Tutor, nome, especie e sexo sao obrigatorios.';
     } else {
         try {
             $pet['foto_perfil'] = salvarFotoPerfilFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null, 'pets');
 
-            $sql = "INSERT INTO pets (id_cliente, nome, especie, raca, idade, peso, status_adocao, foto_perfil)
-                    VALUES (:id_cliente, :nome, :especie, :raca, :idade, :peso, :status_adocao, :foto_perfil)";
+            $sql = "INSERT INTO pets (
+                        id_cliente, nome, especie, raca, sexo, data_nascimento, idade, pelagem, peso,
+                        vacinacao_atualizada, ultima_aplicacao_parasitas, alergias_restricoes,
+                        condicoes_especiais, temperamento, reacao_animais, observacoes_gerais,
+                        status_adocao, foto_perfil
+                    )
+                    VALUES (
+                        :id_cliente, :nome, :especie, :raca, :sexo, :data_nascimento, :idade, :pelagem, :peso,
+                        :vacinacao_atualizada, :ultima_aplicacao_parasitas, :alergias_restricoes,
+                        :condicoes_especiais, :temperamento, :reacao_animais, :observacoes_gerais,
+                        :status_adocao, :foto_perfil
+                    )";
             $stmt = $conexao->prepare($sql);
-            $stmt->execute($pet);
+            $stmt->execute([
+                'id_cliente' => $pet['id_cliente'],
+                'nome' => $pet['nome'],
+                'especie' => $pet['especie'],
+                'raca' => valorOuNulo($pet['raca']),
+                'sexo' => $pet['sexo'],
+                'data_nascimento' => valorOuNulo($pet['data_nascimento']),
+                'idade' => $pet['idade'],
+                'pelagem' => valorOuNulo($pet['pelagem']),
+                'peso' => $pet['peso'],
+                'vacinacao_atualizada' => $pet['vacinacao_atualizada'],
+                'ultima_aplicacao_parasitas' => valorOuNulo($pet['ultima_aplicacao_parasitas']),
+                'alergias_restricoes' => valorOuNulo($pet['alergias_restricoes']),
+                'condicoes_especiais' => valorOuNulo($pet['condicoes_especiais']),
+                'temperamento' => valorOuNulo($pet['temperamento']),
+                'reacao_animais' => valorOuNulo($pet['reacao_animais']),
+                'observacoes_gerais' => valorOuNulo($pet['observacoes_gerais']),
+                'status_adocao' => $pet['status_adocao'],
+                'foto_perfil' => $pet['foto_perfil'],
+            ]);
 
             header("Location: pets.php?sucesso=cadastrar");
             exit;
@@ -122,6 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="nome" class="form-label">Nome</label>
                         <input type="text" name="nome" id="nome" class="form-control" value="<?php echo htmlspecialchars($pet['nome']); ?>" required>
                     </div>
+                    <div class="col-12">
+                        <h2 class="h5 mt-3 mb-0">Identificacao basica</h2>
+                    </div>
                     <div class="col-md-6">
                         <label for="especie" class="form-label">Especie</label>
                         <input type="text" name="especie" id="especie" class="form-control" value="<?php echo htmlspecialchars($pet['especie']); ?>" required>
@@ -131,12 +185,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" name="raca" id="raca" class="form-control" value="<?php echo htmlspecialchars($pet['raca']); ?>">
                     </div>
                     <div class="col-md-6">
-                        <label for="idade" class="form-label">Idade</label>
+                        <label for="sexo" class="form-label">Sexo</label>
+                        <select name="sexo" id="sexo" class="form-select" required>
+                            <option value="">Selecione</option>
+                            <option value="Macho" <?php echo $pet['sexo'] === 'Macho' ? 'selected' : ''; ?>>Macho</option>
+                            <option value="Femea" <?php echo $pet['sexo'] === 'Femea' ? 'selected' : ''; ?>>Femea</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="data_nascimento" class="form-label">Data de nascimento</label>
+                        <input type="date" name="data_nascimento" id="data_nascimento" class="form-control" value="<?php echo htmlspecialchars($pet['data_nascimento']); ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="idade" class="form-label">Idade aproximada</label>
                         <input type="number" name="idade" id="idade" class="form-control" value="<?php echo htmlspecialchars((string) $pet['idade']); ?>" min="0">
                     </div>
                     <div class="col-md-6">
-                        <label for="peso" class="form-label">Peso</label>
+                        <label for="pelagem" class="form-label">Pelagem</label>
+                        <input type="text" name="pelagem" id="pelagem" class="form-control" value="<?php echo htmlspecialchars($pet['pelagem']); ?>" placeholder="Cor e tipo de pelo">
+                    </div>
+                    <div class="col-12">
+                        <h2 class="h5 mt-3 mb-0">Saude e bem-estar</h2>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="peso" class="form-label">Peso atual</label>
                         <input type="number" name="peso" id="peso" class="form-control" value="<?php echo htmlspecialchars((string) $pet['peso']); ?>" min="0" step="0.01">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="ultima_aplicacao_parasitas" class="form-label">Ultima aplicacao de antipulgas/carrapatos</label>
+                        <input type="date" name="ultima_aplicacao_parasitas" id="ultima_aplicacao_parasitas" class="form-control" value="<?php echo htmlspecialchars($pet['ultima_aplicacao_parasitas']); ?>">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox" name="vacinacao_atualizada" id="vacinacao_atualizada" class="form-check-input" value="1" <?php echo (int) $pet['vacinacao_atualizada'] === 1 ? 'checked' : ''; ?>>
+                            <label for="vacinacao_atualizada" class="form-check-label">Carteira de vacinacao atualizada</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="alergias_restricoes" class="form-label">Alergias e restricoes</label>
+                        <textarea name="alergias_restricoes" id="alergias_restricoes" class="form-control" rows="3"><?php echo htmlspecialchars($pet['alergias_restricoes']); ?></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="condicoes_especiais" class="form-label">Doencas ou condicoes especiais</label>
+                        <textarea name="condicoes_especiais" id="condicoes_especiais" class="form-control" rows="3"><?php echo htmlspecialchars($pet['condicoes_especiais']); ?></textarea>
+                    </div>
+                    <div class="col-12">
+                        <h2 class="h5 mt-3 mb-0">Comportamento</h2>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="temperamento" class="form-label">Temperamento</label>
+                        <input type="text" name="temperamento" id="temperamento" class="form-control" value="<?php echo htmlspecialchars($pet['temperamento']); ?>" placeholder="Docil, arisco, morde, medo de secador">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="reacao_animais" class="form-label">Reacao a outros animais</label>
+                        <input type="text" name="reacao_animais" id="reacao_animais" class="form-control" value="<?php echo htmlspecialchars($pet['reacao_animais']); ?>" placeholder="Sociavel ou reativo">
+                    </div>
+                    <div class="col-12">
+                        <label for="observacoes_gerais" class="form-label">Observacoes gerais</label>
+                        <textarea name="observacoes_gerais" id="observacoes_gerais" class="form-control" rows="3"><?php echo htmlspecialchars($pet['observacoes_gerais']); ?></textarea>
                     </div>
                     <div class="col-12">
                         <div class="form-check">

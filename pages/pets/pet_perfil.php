@@ -4,7 +4,9 @@ exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/pet.php';
 garantirCampoFotoTabela($conexao, 'pets');
+garantirCamposDetalhesPet($conexao);
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -81,8 +83,13 @@ $agendamentos = $stmt->fetchAll();
                     >
                     <p class="mb-2"><strong>Especie:</strong> <?php echo htmlspecialchars($pet['especie']); ?></p>
                     <p class="mb-2"><strong>Raca:</strong> <?php echo htmlspecialchars($pet['raca'] ?? ''); ?></p>
-                    <p class="mb-2"><strong>Idade:</strong> <?php echo htmlspecialchars((string) ($pet['idade'] ?? '')); ?></p>
+                    <p class="mb-2"><strong>Sexo:</strong> <?php echo htmlspecialchars($pet['sexo'] ?? ''); ?></p>
+                    <p class="mb-2"><strong>Nascimento:</strong> <?php echo !empty($pet['data_nascimento']) ? htmlspecialchars(date('d/m/Y', strtotime($pet['data_nascimento']))) : ''; ?></p>
+                    <p class="mb-2"><strong>Idade aproximada:</strong> <?php echo htmlspecialchars((string) ($pet['idade'] ?? '')); ?></p>
+                    <p class="mb-2"><strong>Pelagem:</strong> <?php echo htmlspecialchars($pet['pelagem'] ?? ''); ?></p>
                     <p class="mb-2"><strong>Peso:</strong> <?php echo $pet['peso'] !== null ? htmlspecialchars(number_format((float) $pet['peso'], 2, ',', '.')) . ' kg' : ''; ?></p>
+                    <p class="mb-2"><strong>Vacinacao:</strong> <?php echo (int) ($pet['vacinacao_atualizada'] ?? 0) === 1 ? 'Atualizada' : 'Nao informada/pendente'; ?></p>
+                    <p class="mb-2"><strong>Antipulgas/carrapatos:</strong> <?php echo !empty($pet['ultima_aplicacao_parasitas']) ? htmlspecialchars(date('d/m/Y', strtotime($pet['ultima_aplicacao_parasitas']))) : ''; ?></p>
                     <p class="mb-0">
                         <strong>Status:</strong>
                         <?php if ((int) $pet['status_adocao'] === 1): ?>
@@ -103,6 +110,28 @@ $agendamentos = $stmt->fetchAll();
                     <p class="mb-2"><strong>CPF:</strong> <?php echo htmlspecialchars($pet['cliente_cpf']); ?></p>
                     <p class="mb-2"><strong>Telefone:</strong> <?php echo htmlspecialchars($pet['cliente_telefone'] ?? ''); ?></p>
                     <p class="mb-0"><strong>E-mail:</strong> <?php echo htmlspecialchars($pet['cliente_email'] ?? ''); ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Saude e bem-estar</h2>
+                    <p class="mb-2"><strong>Alergias e restricoes:</strong> <?php echo nl2br(htmlspecialchars($pet['alergias_restricoes'] ?? '')); ?></p>
+                    <p class="mb-0"><strong>Condicoes especiais:</strong> <?php echo nl2br(htmlspecialchars($pet['condicoes_especiais'] ?? '')); ?></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Comportamento</h2>
+                    <p class="mb-2"><strong>Temperamento:</strong> <?php echo htmlspecialchars($pet['temperamento'] ?? ''); ?></p>
+                    <p class="mb-2"><strong>Reacao a outros animais:</strong> <?php echo htmlspecialchars($pet['reacao_animais'] ?? ''); ?></p>
+                    <p class="mb-0"><strong>Observacoes gerais:</strong> <?php echo nl2br(htmlspecialchars($pet['observacoes_gerais'] ?? '')); ?></p>
                 </div>
             </div>
         </div>

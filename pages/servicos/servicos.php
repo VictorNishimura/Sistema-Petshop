@@ -70,7 +70,7 @@ $servicos = $stmt->fetchAll();
                                         <a href="servico_editar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>
                                         <a href="servico_excluir.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-danger">Excluir</a>
                                     <?php else: ?>
-                                        <span class="text-muted">Visualizar</span>
+                                        <a href="servico_visualizar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-secondary">Visualizar</a>
                                     <?php endif; ?>
                                 </td>
                             </tr>

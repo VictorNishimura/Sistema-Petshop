@@ -91,7 +91,7 @@ $clientes = $stmt->fetchAll();
                                     <?php endif; ?>
 
                                     <?php if (!$podeEditar && !$podeExcluir): ?>
-                                        <span class="text-muted">Visualizar</span>
+                                        <a href="cliente_visualizar.php?id=<?php echo $cliente['id']; ?>" class="btn btn-sm btn-outline-secondary">Visualizar</a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
