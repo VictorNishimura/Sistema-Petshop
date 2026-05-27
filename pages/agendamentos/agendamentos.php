@@ -5,13 +5,14 @@ exigirLogin();
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/agendamento.php';
 garantirCampoFuncionarioAgendamento($conexao);
+garantirCampoQueixaAgendamento($conexao);
 
 $podeGerenciar = usuarioPode(['admin', 'funcionario']);
 $idFuncionarioLogado = (int) ($_SESSION['usuario_id_funcionario'] ?? 0);
 $data = $_GET['data'] ?? date('Y-m-d');
 
 $stmt = $conexao->prepare(
-    "SELECT a.id, a.id_pet, a.id_funcionario, a.data_hora, a.status, a.observacoes,
+    "SELECT a.id, a.id_pet, a.id_funcionario, a.data_hora, a.status, a.queixa_principal, a.observacoes,
             p.nome AS pet_nome,
             c.nome AS cliente_nome,
             s.nome AS servico_nome,
@@ -106,7 +107,12 @@ $agendamentos = $stmt->fetchAll();
                                 </td>
                                 <td><?php echo htmlspecialchars($agendamento['funcionario_nome'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($agendamento['status']); ?></td>
-                                <td><?php echo htmlspecialchars($agendamento['observacoes'] ?? ''); ?></td>
+                                <td>
+                                    <?php echo htmlspecialchars($agendamento['observacoes'] ?? ''); ?>
+                                    <?php if (!empty($agendamento['queixa_principal'])): ?>
+                                        <div class="text-muted small">Queixa: <?php echo htmlspecialchars($agendamento['queixa_principal']); ?></div>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="text-end">
                                     <?php if ($podeGerenciar && $agendamento['status'] === 'Agendado'): ?>
                                         <a href="agendamento_editar.php?id=<?php echo $agendamento['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>

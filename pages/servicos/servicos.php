@@ -3,10 +3,18 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/servico.php';
+garantirCampoCategoriaServico($conexao);
 
 $podeGerenciar = usuarioPode(['admin']);
-$stmt = $conexao->query("SELECT id, nome, preco, duracao_minutos FROM servicos ORDER BY nome");
+$stmt = $conexao->query("SELECT id, nome, categoria, preco, duracao_minutos FROM servicos ORDER BY categoria, nome");
 $servicos = $stmt->fetchAll();
+$servicosPorCategoria = [];
+
+foreach ($servicos as $servico) {
+    $categoria = $servico['categoria'] ?: 'Sem categoria';
+    $servicosPorCategoria[$categoria][] = $servico;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -39,47 +47,48 @@ $servicos = $stmt->fetchAll();
         <div class="alert alert-danger">Voce nao tem permissao para acessar essa tela.</div>
     <?php endif; ?>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Preco</th>
-                            <th>Duracao</th>
-                            <th class="text-end">Acoes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (count($servicos) === 0): ?>
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">Nenhum servico cadastrado.</td>
-                            </tr>
-                        <?php endif; ?>
+    <?php if (count($servicos) === 0): ?>
+        <div class="alert alert-info">Nenhum servico cadastrado.</div>
+    <?php endif; ?>
 
-                        <?php foreach ($servicos as $servico): ?>
+    <?php foreach ($servicosPorCategoria as $categoria => $listaServicos): ?>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3"><?php echo htmlspecialchars($categoria); ?></h2>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($servico['nome']); ?></td>
-                                <td>R$ <?php echo htmlspecialchars(number_format((float) $servico['preco'], 2, ',', '.')); ?></td>
-                                <td>
-                                    <?php echo $servico['duracao_minutos'] !== null ? htmlspecialchars($servico['duracao_minutos']) . ' min' : ''; ?>
-                                </td>
-                                <td class="text-end">
-                                    <?php if ($podeGerenciar): ?>
-                                        <a href="servico_editar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>
-                                        <a href="servico_excluir.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-danger">Excluir</a>
-                                    <?php else: ?>
-                                        <a href="servico_visualizar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-secondary">Visualizar</a>
-                                    <?php endif; ?>
-                                </td>
+                                <th>Nome</th>
+                                <th>Preco</th>
+                                <th>Duracao</th>
+                                <th class="text-end">Acoes</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($listaServicos as $servico): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($servico['nome']); ?></td>
+                                    <td>R$ <?php echo htmlspecialchars(number_format((float) $servico['preco'], 2, ',', '.')); ?></td>
+                                    <td>
+                                        <?php echo $servico['duracao_minutos'] !== null ? htmlspecialchars($servico['duracao_minutos']) . ' min' : ''; ?>
+                                    </td>
+                                    <td class="text-end">
+                                        <?php if ($podeGerenciar): ?>
+                                            <a href="servico_editar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>
+                                            <a href="servico_excluir.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-danger">Excluir</a>
+                                        <?php else: ?>
+                                            <a href="servico_visualizar.php?id=<?php echo $servico['id']; ?>" class="btn btn-sm btn-outline-secondary">Visualizar</a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    <?php endforeach; ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

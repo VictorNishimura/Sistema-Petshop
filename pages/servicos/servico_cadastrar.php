@@ -3,31 +3,36 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['admin']);
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/servico.php';
+garantirCampoCategoriaServico($conexao);
 
 $erro = '';
 $servico = [
     'nome' => '',
+    'categoria' => '',
     'preco' => '',
     'duracao_minutos' => '',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $servico['nome'] = trim($_POST['nome'] ?? '');
+    $servico['categoria'] = trim($_POST['categoria'] ?? '');
     $servico['preco'] = trim($_POST['preco'] ?? '');
     $servico['duracao_minutos'] = trim($_POST['duracao_minutos'] ?? '');
     $preco = (float) str_replace(',', '.', $servico['preco']);
     $duracao = $servico['duracao_minutos'] !== '' ? (int) $servico['duracao_minutos'] : null;
 
-    if ($servico['nome'] === '' || $preco <= 0) {
-        $erro = 'Nome e preco sao obrigatorios.';
+    if ($servico['nome'] === '' || $servico['categoria'] === '' || $preco <= 0) {
+        $erro = 'Nome, categoria e preco sao obrigatorios.';
     } else {
         try {
             $stmt = $conexao->prepare(
-                "INSERT INTO servicos (nome, preco, duracao_minutos)
-                 VALUES (:nome, :preco, :duracao_minutos)"
+                "INSERT INTO servicos (nome, categoria, preco, duracao_minutos)
+                 VALUES (:nome, :categoria, :preco, :duracao_minutos)"
             );
             $stmt->execute([
                 'nome' => $servico['nome'],
+                'categoria' => $servico['categoria'],
                 'preco' => $preco,
                 'duracao_minutos' => $duracao,
             ]);
@@ -72,6 +77,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="col-md-6">
                         <label for="nome" class="form-label">Nome</label>
                         <input type="text" name="nome" id="nome" class="form-control" value="<?php echo htmlspecialchars($servico['nome']); ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="categoria" class="form-label">Sessao</label>
+                        <select name="categoria" id="categoria" class="form-select" required>
+                            <option value="">Selecione</option>
+                            <?php foreach (categoriasServico() as $categoria): ?>
+                                <option value="<?php echo $categoria; ?>" <?php echo $servico['categoria'] === $categoria ? 'selected' : ''; ?>>
+                                    <?php echo $categoria; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label for="preco" class="form-label">Preco</label>

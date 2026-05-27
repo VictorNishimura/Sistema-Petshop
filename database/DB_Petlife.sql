@@ -22,6 +22,12 @@ CREATE TABLE clientes (
     telefone VARCHAR(20),
     email VARCHAR(100),
     endereco TEXT,
+    rua VARCHAR(150),
+    numero VARCHAR(20),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    uf CHAR(2),
+    cep VARCHAR(10),
     foto_perfil VARCHAR(255),
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,6 +81,7 @@ CREATE TABLE produtos (
 CREATE TABLE servicos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL, -- Banho, Tosa, Hospedagem
+    categoria VARCHAR(50),
     preco DECIMAL(10,2) NOT NULL,
     duracao_minutos INT
 );

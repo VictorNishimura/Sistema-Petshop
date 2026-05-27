@@ -13,6 +13,28 @@ function garantirCampoFuncionarioAgendamento(PDO $conexao): void
     }
 }
 
+function garantirCampoQueixaAgendamento(PDO $conexao): void
+{
+    garantirCampoTexto($conexao, 'agendamentos', 'queixa_principal');
+    garantirCampoTexto($conexao, 'consultas', 'queixa_principal');
+}
+
+function garantirCampoTexto(PDO $conexao, string $tabela, string $campo): void
+{
+    $stmt = $conexao->prepare(
+        "SELECT COUNT(*)
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = :tabela
+           AND COLUMN_NAME = :campo"
+    );
+    $stmt->execute(['tabela' => $tabela, 'campo' => $campo]);
+
+    if ((int) $stmt->fetchColumn() === 0) {
+        $conexao->exec("ALTER TABLE {$tabela} ADD {$campo} TEXT NULL");
+    }
+}
+
 function servicoEhConsulta(string $nomeServico): bool
 {
     $nome = strtolower($nomeServico);

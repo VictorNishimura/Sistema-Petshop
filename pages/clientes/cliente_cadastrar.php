@@ -4,7 +4,9 @@ exigirPermissao(['admin', 'funcionario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/cliente.php';
 garantirCampoFotoCliente($conexao);
+garantirCamposEnderecoCliente($conexao);
 
 $erro = '';
 $cliente = [
@@ -13,6 +15,12 @@ $cliente = [
     'telefone' => '',
     'email' => '',
     'endereco' => '',
+    'rua' => '',
+    'numero' => '',
+    'bairro' => '',
+    'cidade' => '',
+    'uf' => '',
+    'cep' => '',
     'foto_perfil' => null,
 ];
 
@@ -21,7 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cliente['cpf'] = trim($_POST['cpf'] ?? '');
     $cliente['telefone'] = trim($_POST['telefone'] ?? '');
     $cliente['email'] = trim($_POST['email'] ?? '');
-    $cliente['endereco'] = trim($_POST['endereco'] ?? '');
+    $cliente['rua'] = trim($_POST['rua'] ?? '');
+    $cliente['numero'] = trim($_POST['numero'] ?? '');
+    $cliente['bairro'] = trim($_POST['bairro'] ?? '');
+    $cliente['cidade'] = trim($_POST['cidade'] ?? '');
+    $cliente['uf'] = strtoupper(trim($_POST['uf'] ?? ''));
+    $cliente['cep'] = trim($_POST['cep'] ?? '');
+    $cliente['endereco'] = montarEnderecoCliente($cliente);
 
     if ($cliente['nome'] === '' || $cliente['cpf'] === '') {
         $erro = 'Nome e CPF sao obrigatorios.';
@@ -29,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $cliente['foto_perfil'] = salvarFotoClienteFormulario($_FILES['foto_perfil'] ?? [], $_POST['foto_camera'] ?? null);
 
-            $sql = "INSERT INTO clientes (nome, cpf, telefone, email, endereco, foto_perfil)
-                    VALUES (:nome, :cpf, :telefone, :email, :endereco, :foto_perfil)";
+            $sql = "INSERT INTO clientes (nome, cpf, telefone, email, endereco, rua, numero, bairro, cidade, uf, cep, foto_perfil)
+                    VALUES (:nome, :cpf, :telefone, :email, :endereco, :rua, :numero, :bairro, :cidade, :uf, :cep, :foto_perfil)";
             $stmt = $conexao->prepare($sql);
             $stmt->execute($cliente);
 
@@ -108,8 +122,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="email" name="email" id="email" class="form-control" value="<?php echo htmlspecialchars($cliente['email']); ?>">
                     </div>
                     <div class="col-12">
-                        <label for="endereco" class="form-label">Endereco</label>
-                        <textarea name="endereco" id="endereco" class="form-control" rows="3"><?php echo htmlspecialchars($cliente['endereco']); ?></textarea>
+                        <h2 class="h5 mt-3 mb-0">Endereco</h2>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rua" class="form-label">Rua</label>
+                        <input type="text" name="rua" id="rua" class="form-control" value="<?php echo htmlspecialchars($cliente['rua']); ?>">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="numero" class="form-label">Numero</label>
+                        <input type="text" name="numero" id="numero" class="form-control" value="<?php echo htmlspecialchars($cliente['numero']); ?>">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="bairro" class="form-label">Bairro</label>
+                        <input type="text" name="bairro" id="bairro" class="form-control" value="<?php echo htmlspecialchars($cliente['bairro']); ?>">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="cidade" class="form-label">Cidade</label>
+                        <input type="text" name="cidade" id="cidade" class="form-control" value="<?php echo htmlspecialchars($cliente['cidade']); ?>">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="uf" class="form-label">UF</label>
+                        <input type="text" name="uf" id="uf" class="form-control" value="<?php echo htmlspecialchars($cliente['uf']); ?>" maxlength="2">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="cep" class="form-label">CEP</label>
+                        <input type="text" name="cep" id="cep" class="form-control" value="<?php echo htmlspecialchars($cliente['cep']); ?>" maxlength="10">
                     </div>
                 </div>
 

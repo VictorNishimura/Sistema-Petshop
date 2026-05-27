@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/servico.php';
+garantirCampoCategoriaServico($conexao);
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -11,7 +13,7 @@ if ($id <= 0) {
     exit;
 }
 
-$stmt = $conexao->prepare("SELECT id, nome, preco, duracao_minutos FROM servicos WHERE id = :id");
+$stmt = $conexao->prepare("SELECT id, nome, categoria, preco, duracao_minutos FROM servicos WHERE id = :id");
 $stmt->execute(['id' => $id]);
 $servico = $stmt->fetch();
 
@@ -44,6 +46,7 @@ if (!$servico) {
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <p class="mb-2"><strong>Preco:</strong> R$ <?php echo htmlspecialchars(number_format((float) $servico['preco'], 2, ',', '.')); ?></p>
+            <p class="mb-2"><strong>Sessao:</strong> <?php echo htmlspecialchars($servico['categoria'] ?? ''); ?></p>
             <p class="mb-0"><strong>Duracao:</strong> <?php echo $servico['duracao_minutos'] !== null ? htmlspecialchars($servico['duracao_minutos']) . ' min' : 'Nao informada'; ?></p>
         </div>
     </div>

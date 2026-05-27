@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['admin', 'veterinario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/agendamento.php';
+garantirCampoQueixaAgendamento($conexao);
 
 $idPet = (int) ($_GET['id_pet'] ?? 0);
 $busca = trim($_GET['busca'] ?? '');
@@ -43,7 +45,7 @@ if ($idPet > 0) {
     $petSelecionado = $stmt->fetch();
 
     $stmt = $conexao->prepare(
-        "SELECT co.id, co.data_consulta, co.diagnostico, co.prescricao, f.nome AS veterinario_nome
+        "SELECT co.id, co.data_consulta, co.queixa_principal, co.diagnostico, co.prescricao, f.nome AS veterinario_nome
          FROM consultas co
          INNER JOIN funcionarios f ON f.id = co.id_funcionario
          WHERE co.id_pet = :id_pet
@@ -161,10 +163,14 @@ if ($idPet > 0) {
                             <strong><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($consulta['data_consulta']))); ?></strong>
                             <span class="text-muted">Veterinario: <?php echo htmlspecialchars($consulta['veterinario_nome']); ?></span>
                         </div>
+                        <?php if (!empty($consulta['queixa_principal'])): ?>
+                            <p class="mb-2"><strong>Queixa principal:</strong> <?php echo nl2br(htmlspecialchars($consulta['queixa_principal'])); ?></p>
+                        <?php endif; ?>
                         <p class="mb-2"><strong>Diagnostico:</strong> <?php echo nl2br(htmlspecialchars($consulta['diagnostico'] ?? '')); ?></p>
                         <p class="mb-0"><strong>Prescricao:</strong> <?php echo nl2br(htmlspecialchars($consulta['prescricao'] ?? '')); ?></p>
                         <div class="mt-3">
                             <a href="receita_imprimir.php?id=<?php echo $consulta['id']; ?>" target="_blank" class="btn btn-sm btn-outline-primary">Receita/PDF</a>
+                            <a href="atestado_imprimir.php?id=<?php echo $consulta['id']; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">Atestado</a>
                         </div>
                     </div>
                 <?php endforeach; ?>

@@ -20,6 +20,9 @@ $paginaAtual = basename($_SERVER['PHP_SELF']);
                     <a class="nav-link <?php echo in_array($paginaAtual, ['pets.php', 'pet_cadastrar.php', 'pet_editar.php', 'pet_excluir.php', 'pet_perfil.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/pets/pets.php'); ?>">Pets</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <?php echo $paginaAtual === 'adocao.php' ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/adocao/adocao.php'); ?>">Adocao</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <?php echo in_array($paginaAtual, ['servicos.php', 'servico_cadastrar.php', 'servico_editar.php', 'servico_excluir.php'], true) ? 'active' : ''; ?>" href="<?php echo caminhoApp('pages/servicos/servicos.php'); ?>">Servicos</a>
                 </li>
                 <li class="nav-item">
@@ -40,6 +43,7 @@ $paginaAtual = basename($_SERVER['PHP_SELF']);
             <span class="navbar-text text-white me-3">
                 Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuario'); ?>!
             </span>
+            <a href="<?php echo caminhoApp('configuracoes.php'); ?>" class="btn btn-outline-light btn-sm me-2">Configuracoes</a>
             <a href="<?php echo caminhoApp('logout.php'); ?>" class="btn btn-outline-light btn-sm">Sair</a>
         </div>
     </div>

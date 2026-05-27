@@ -5,6 +5,7 @@ exigirPermissao(['admin', 'funcionario', 'veterinario']);
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/agendamento.php';
 garantirCampoFuncionarioAgendamento($conexao);
+garantirCampoQueixaAgendamento($conexao);
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 
@@ -66,6 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'diagnostico' => $diagnostico,
                     'prescricao' => $prescricao !== '' ? $prescricao : null,
                 ]);
+                $idConsulta = (int) $conexao->lastInsertId();
+
+                if (!empty($agendamento['queixa_principal'])) {
+                    $stmtQueixa = $conexao->prepare("UPDATE consultas SET queixa_principal = :queixa_principal WHERE id = :id");
+                    $stmtQueixa->execute([
+                        'queixa_principal' => $agendamento['queixa_principal'],
+                        'id' => $idConsulta,
+                    ]);
+                }
             }
 
             $stmt = $conexao->prepare("UPDATE agendamentos SET status = 'Concluído' WHERE id = :id");
@@ -103,6 +113,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="mb-1"><strong>Pet:</strong> <?php echo htmlspecialchars($agendamento['pet_nome']); ?></p>
             <p class="mb-1"><strong>Servico:</strong> <?php echo htmlspecialchars($agendamento['servico_nome']); ?></p>
             <p class="text-muted"><strong>Prestador:</strong> <?php echo htmlspecialchars($agendamento['funcionario_nome'] ?? ''); ?></p>
+            <?php if (!empty($agendamento['queixa_principal'])): ?>
+                <div class="alert alert-warning">
+                    <strong>Queixa principal:</strong><br>
+                    <?php echo nl2br(htmlspecialchars($agendamento['queixa_principal'])); ?>
+                </div>
+            <?php endif; ?>
 
             <?php if ($erro !== ''): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($erro); ?></div>

@@ -4,7 +4,9 @@ exigirPermissao(['admin', 'veterinario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/pet.php';
+require_once __DIR__ . '/../../includes/agendamento.php';
 garantirCamposDetalhesPet($conexao);
+garantirCampoQueixaAgendamento($conexao);
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -14,7 +16,7 @@ if ($id <= 0) {
 }
 
 $stmt = $conexao->prepare(
-    "SELECT co.id, co.data_consulta, co.diagnostico, co.prescricao,
+    "SELECT co.id, co.data_consulta, co.queixa_principal, co.diagnostico, co.prescricao,
             p.id AS pet_id, p.nome AS pet_nome, p.especie, p.raca, p.sexo, p.data_nascimento,
             p.idade, p.pelagem, p.peso, p.vacinacao_atualizada, p.ultima_aplicacao_parasitas,
             p.alergias_restricoes, p.condicoes_especiais, p.temperamento, p.reacao_animais,
@@ -122,6 +124,11 @@ if (!$consulta) {
                 <div class="field"><strong>Reacao a outros animais:</strong> <?php echo htmlspecialchars($consulta['reacao_animais'] ?? ''); ?></div>
             </div>
             <p class="field"><strong>Observacoes gerais:</strong> <?php echo nl2br(htmlspecialchars($consulta['observacoes_gerais'] ?? '')); ?></p>
+        </section>
+
+        <section class="section">
+            <h2>Queixa Principal</h2>
+            <div class="box"><?php echo nl2br(htmlspecialchars($consulta['queixa_principal'] ?? '')); ?></div>
         </section>
 
         <section class="section">

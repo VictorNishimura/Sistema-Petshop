@@ -4,12 +4,14 @@ exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/cliente.php';
 garantirCampoFotoCliente($conexao);
+garantirCamposEnderecoCliente($conexao);
 
 $podeEditar = usuarioPode(['admin', 'funcionario']);
 $podeExcluir = usuarioPode(['admin']);
 
-$stmt = $conexao->query("SELECT id, nome, cpf, telefone, email, endereco, foto_perfil, data_cadastro FROM clientes ORDER BY nome");
+$stmt = $conexao->query("SELECT id, nome, cpf, telefone, email, endereco, rua, numero, bairro, cidade, uf, cep, foto_perfil, data_cadastro FROM clientes ORDER BY nome");
 $clientes = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -80,7 +82,7 @@ $clientes = $stmt->fetchAll();
                                 <td><?php echo htmlspecialchars($cliente['cpf']); ?></td>
                                 <td><?php echo htmlspecialchars($cliente['telefone'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($cliente['email'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($cliente['endereco'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars(montarEnderecoCliente($cliente) ?: ($cliente['endereco'] ?? '')); ?></td>
                                 <td class="text-end">
                                     <?php if ($podeEditar): ?>
                                         <a href="cliente_editar.php?id=<?php echo $cliente['id']; ?>" class="btn btn-sm btn-outline-primary">Editar</a>

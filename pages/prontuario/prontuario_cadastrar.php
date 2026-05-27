@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../includes/auth.php';
 exigirPermissao(['veterinario']);
 
 require_once __DIR__ . '/../../config/conexao.php';
+require_once __DIR__ . '/../../includes/agendamento.php';
+garantirCampoQueixaAgendamento($conexao);
 
 $idFuncionario = (int) ($_SESSION['usuario_id_funcionario'] ?? 0);
 
@@ -17,6 +19,7 @@ $erro = '';
 $atendimento = [
     'id_pet' => (int) ($_GET['id_pet'] ?? 0),
     'data_consulta' => date('Y-m-d\TH:i'),
+    'queixa_principal' => '',
     'diagnostico' => '',
     'prescricao' => '',
 ];
@@ -24,6 +27,7 @@ $atendimento = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $atendimento['id_pet'] = (int) ($_POST['id_pet'] ?? 0);
     $atendimento['data_consulta'] = trim($_POST['data_consulta'] ?? '');
+    $atendimento['queixa_principal'] = trim($_POST['queixa_principal'] ?? '');
     $atendimento['diagnostico'] = trim($_POST['diagnostico'] ?? '');
     $atendimento['prescricao'] = trim($_POST['prescricao'] ?? '');
 
@@ -34,13 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $stmt = $conexao->prepare(
-                "INSERT INTO consultas (id_pet, id_funcionario, data_consulta, diagnostico, prescricao)
-                 VALUES (:id_pet, :id_funcionario, :data_consulta, :diagnostico, :prescricao)"
+                "INSERT INTO consultas (id_pet, id_funcionario, data_consulta, queixa_principal, diagnostico, prescricao)
+                 VALUES (:id_pet, :id_funcionario, :data_consulta, :queixa_principal, :diagnostico, :prescricao)"
             );
             $stmt->execute([
                 'id_pet' => $atendimento['id_pet'],
                 'id_funcionario' => $idFuncionario,
                 'data_consulta' => date('Y-m-d H:i:s', strtotime($atendimento['data_consulta'])),
+                'queixa_principal' => $atendimento['queixa_principal'] !== '' ? $atendimento['queixa_principal'] : null,
                 'diagnostico' => $atendimento['diagnostico'],
                 'prescricao' => $atendimento['prescricao'] !== '' ? $atendimento['prescricao'] : null,
             ]);
@@ -96,6 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="col-md-6">
                         <label for="data_consulta" class="form-label">Data e hora</label>
                         <input type="datetime-local" name="data_consulta" id="data_consulta" class="form-control" value="<?php echo htmlspecialchars($atendimento['data_consulta']); ?>" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="queixa_principal" class="form-label">Queixa principal</label>
+                        <textarea name="queixa_principal" id="queixa_principal" class="form-control" rows="3" placeholder="O que o tutor relatou? Sintomas, desde quando, comportamento, alimentacao etc."><?php echo htmlspecialchars($atendimento['queixa_principal']); ?></textarea>
                     </div>
                     <div class="col-12">
                         <label for="diagnostico" class="form-label">Diagnostico</label>

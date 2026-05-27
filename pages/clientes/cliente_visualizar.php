@@ -4,7 +4,9 @@ exigirLogin();
 
 require_once __DIR__ . '/../../config/conexao.php';
 require_once __DIR__ . '/../../includes/cliente_foto.php';
+require_once __DIR__ . '/../../includes/cliente.php';
 garantirCampoFotoCliente($conexao);
+garantirCamposEnderecoCliente($conexao);
 
 $id = (int) ($_GET['id'] ?? 0);
 
@@ -13,7 +15,7 @@ if ($id <= 0) {
     exit;
 }
 
-$stmt = $conexao->prepare("SELECT id, nome, cpf, telefone, email, endereco, foto_perfil, data_cadastro FROM clientes WHERE id = :id");
+$stmt = $conexao->prepare("SELECT id, nome, cpf, telefone, email, endereco, rua, numero, bairro, cidade, uf, cep, foto_perfil, data_cadastro FROM clientes WHERE id = :id");
 $stmt->execute(['id' => $id]);
 $cliente = $stmt->fetch();
 
@@ -55,7 +57,10 @@ $pets = $stmt->fetchAll();
                     <p class="mb-2"><strong>CPF:</strong> <?php echo htmlspecialchars($cliente['cpf']); ?></p>
                     <p class="mb-2"><strong>Telefone:</strong> <?php echo htmlspecialchars($cliente['telefone'] ?? ''); ?></p>
                     <p class="mb-2"><strong>E-mail:</strong> <?php echo htmlspecialchars($cliente['email'] ?? ''); ?></p>
-                    <p class="mb-0"><strong>Endereco:</strong> <?php echo htmlspecialchars($cliente['endereco'] ?? ''); ?></p>
+                    <p class="mb-2"><strong>Rua:</strong> <?php echo htmlspecialchars($cliente['rua'] ?? ''); ?>, <?php echo htmlspecialchars($cliente['numero'] ?? ''); ?></p>
+                    <p class="mb-2"><strong>Bairro:</strong> <?php echo htmlspecialchars($cliente['bairro'] ?? ''); ?></p>
+                    <p class="mb-2"><strong>Cidade/UF:</strong> <?php echo htmlspecialchars($cliente['cidade'] ?? ''); ?> - <?php echo htmlspecialchars($cliente['uf'] ?? ''); ?></p>
+                    <p class="mb-0"><strong>CEP:</strong> <?php echo htmlspecialchars($cliente['cep'] ?? ''); ?></p>
                 </div>
             </div>
         </div>
