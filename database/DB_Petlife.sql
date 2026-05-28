@@ -7,6 +7,11 @@
 -- Versão do servidor: 10.4.27-MariaDB
 -- versão do PHP: 8.2.0
 
+
+CREATE DATABASE DB_Petlife;
+USE DB_Petlife;
+
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -18,7 +23,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `db_petlife`
+-- Banco de dados: `DB_Petlife`
 --
 
 -- --------------------------------------------------------
@@ -203,7 +208,8 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `id_funcionario`, `nome`, `email`, `senha`, `pergunta_secreta`, `resposta_secreta`, `nivel`, `criado_em`) VALUES
-(3, 2, 'SAMARA REGINA VIEIRA', 'vet@gmail.com', '123', '123', '123', 'veterinario', '2026-05-28 14:40:09');
+(3, 2, 'SAMARA REGINA VIEIRA', 'vet@gmail.com', '123', '123', '123', 'veterinario', '2026-05-28 14:40:09'),
+(4, 3, 'admin', 'admin@gmail.com', 'admin', '123', '123', 'admin', NOW());
 
 -- --------------------------------------------------------
 
