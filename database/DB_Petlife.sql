@@ -1,123 +1,381 @@
-CREATE DATABASE DB_Petlife;
-USE DB_Petlife;
+-- phpMyAdmin SQL Dump
+-- version 5.2.0
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Tempo de geração: 28-Maio-2026 às 16:44
+-- Versão do servidor: 10.4.27-MariaDB
+-- versão do PHP: 8.2.0
 
--- 1. TABELA DE USUÁRIOS (Sistema de Login e Segurança)
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_funcionario INT NULL,
-    nome VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    senha VARCHAR(255) NOT NULL, -- Aqui usaremos password_hash no PHP
-    pergunta_secreta VARCHAR(255) NOT NULL,
-    resposta_secreta VARCHAR(255) NOT NULL,
-    nivel ENUM('admin', 'funcionario', 'veterinario') DEFAULT 'funcionario',
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
--- 2. TABELA DE CLIENTES (Cadastro Obrigatório 1)
-CREATE TABLE clientes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(14) UNIQUE NOT NULL,
-    telefone VARCHAR(20),
-    email VARCHAR(100),
-    endereco TEXT,
-    rua VARCHAR(150),
-    numero VARCHAR(20),
-    bairro VARCHAR(100),
-    cidade VARCHAR(100),
-    uf CHAR(2),
-    cep VARCHAR(10),
-    foto_perfil VARCHAR(255),
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
--- 3. TABELA DE PETS (Cadastro Obrigatório 2)
-CREATE TABLE pets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_cliente INT NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    especie VARCHAR(50) NOT NULL, -- Cão, Gato, etc.
-    raca VARCHAR(50),
-    sexo VARCHAR(10),
-    data_nascimento DATE,
-    idade INT,
-    pelagem VARCHAR(100),
-    peso DECIMAL(5,2),
-    foto_perfil VARCHAR(255),
-    vacinacao_atualizada BOOLEAN DEFAULT FALSE,
-    ultima_aplicacao_parasitas DATE,
-    alergias_restricoes TEXT,
-    condicoes_especiais TEXT,
-    temperamento VARCHAR(100),
-    reacao_animais VARCHAR(100),
-    observacoes_gerais TEXT,
-    status_adocao BOOLEAN DEFAULT FALSE, -- Funcionalidade de Adoção
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id) ON DELETE CASCADE
-);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
--- 4. TABELA DE FUNCIONÁRIOS/VETERINÁRIOS (Cadastro Obrigatório 3)
-CREATE TABLE funcionarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    cargo VARCHAR(50) NOT NULL, -- Veterinário, Tosador, Atendente
-    crmv VARCHAR(20), -- Apenas para veterinários
-    telefone VARCHAR(20),
-    foto_perfil VARCHAR(255),
-    data_admissao DATE
-);
+--
+-- Banco de dados: `db_petlife`
+--
 
--- 5. TABELA DE PRODUTOS (Cadastro Obrigatório 4 - Loja)
-CREATE TABLE produtos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    descricao TEXT,
-    preco DECIMAL(10,2) NOT NULL,
-    estoque INT NOT NULL,
-    categoria VARCHAR(50) -- Ração, Brinquedo, Medicamento
-);
+-- --------------------------------------------------------
 
--- 6. TABELA DE SERVIÇOS (Base para Agendamentos)
-CREATE TABLE servicos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL, -- Banho, Tosa, Hospedagem
-    categoria VARCHAR(50),
-    preco DECIMAL(10,2) NOT NULL,
-    duracao_minutos INT
-);
+--
+-- Estrutura da tabela `agendamentos`
+--
 
--- 7. TABELA DE AGENDAMENTOS (Funcionalidade Temática: Banho/Tosa/Hospedagem)
-CREATE TABLE agendamentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_pet INT NOT NULL,
-    id_servico INT NOT NULL,
-    id_funcionario INT,
-    data_hora DATETIME NOT NULL,
-    status ENUM('Agendado', 'Concluído', 'Cancelado') DEFAULT 'Agendado',
-    observacoes TEXT,
-    FOREIGN KEY (id_pet) REFERENCES pets(id),
-    FOREIGN KEY (id_servico) REFERENCES servicos(id),
-    FOREIGN KEY (id_funcionario) REFERENCES funcionarios(id)
-);
+CREATE TABLE `agendamentos` (
+  `id` int(11) NOT NULL,
+  `id_pet` int(11) NOT NULL,
+  `id_servico` int(11) NOT NULL,
+  `id_funcionario` int(11) DEFAULT NULL,
+  `data_hora` datetime NOT NULL,
+  `status` enum('Agendado','Concluído','Cancelado') DEFAULT 'Agendado',
+  `observacoes` text DEFAULT NULL,
+  `queixa_principal` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 8. TABELA DE CONSULTAS (Funcionalidade Temática: Veterinária)
-CREATE TABLE consultas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_pet INT NOT NULL,
-    id_funcionario INT NOT NULL, -- O Veterinário
-    data_consulta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    diagnostico TEXT,
-    prescricao TEXT,
-    FOREIGN KEY (id_pet) REFERENCES pets(id),
-    FOREIGN KEY (id_funcionario) REFERENCES funcionarios(id)
-);
+-- --------------------------------------------------------
 
--- 9. TABELA DE VENDAS (Registro de Vendas de Produtos)
-CREATE TABLE vendas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_produto INT NOT NULL,
-    quantidade INT NOT NULL,
-    data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    valor_total DECIMAL(10,2),
-    FOREIGN KEY (id_produto) REFERENCES produtos(id)
-);
+--
+-- Estrutura da tabela `clientes`
+--
+
+CREATE TABLE `clientes` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `cpf` varchar(14) NOT NULL,
+  `telefone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `endereco` text DEFAULT NULL,
+  `rua` varchar(150) DEFAULT NULL,
+  `numero` varchar(20) DEFAULT NULL,
+  `bairro` varchar(100) DEFAULT NULL,
+  `cidade` varchar(100) DEFAULT NULL,
+  `uf` char(2) DEFAULT NULL,
+  `cep` varchar(10) DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `data_cadastro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `clientes`
+--
+
+INSERT INTO `clientes` (`id`, `nome`, `cpf`, `telefone`, `email`, `endereco`, `rua`, `numero`, `bairro`, `cidade`, `uf`, `cep`, `foto_perfil`, `data_cadastro`) VALUES
+(1, 'PETLIFE', '320.192.283-21', '(11) 99833-1839', 'petlife@gmail.com', 'Aleatorio, 280 | Centro | Sorocaba - SP | 18053-467', 'Aleatorio', '280', 'Centro', 'Sorocaba', 'SP', '18053-467', 'uploads/clientes/cliente_6a1851b9c5aac1.39885814.png', '2026-05-28 14:31:21'),
+(3, 'SAMARA REGINA VIEIRA', '488.298.283-21', '(11) 99833-1839', 'samara@gmail.com', 'Aleatorio, 280 | Sallito | Sorocaba - SP | 18053-467', 'Aleatorio', '280', 'Sallito', 'Sorocaba', 'SP', '18053-467', 'uploads/clientes/cliente_6a18542d1a6d59.45091203.jpg', '2026-05-28 14:41:36');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `consultas`
+--
+
+CREATE TABLE `consultas` (
+  `id` int(11) NOT NULL,
+  `id_pet` int(11) NOT NULL,
+  `id_funcionario` int(11) NOT NULL,
+  `data_consulta` datetime DEFAULT current_timestamp(),
+  `diagnostico` text DEFAULT NULL,
+  `prescricao` text DEFAULT NULL,
+  `queixa_principal` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `funcionarios`
+--
+
+CREATE TABLE `funcionarios` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `cargo` varchar(50) NOT NULL,
+  `crmv` varchar(20) DEFAULT NULL,
+  `telefone` varchar(20) DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `data_admissao` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `funcionarios`
+--
+
+INSERT INTO `funcionarios` (`id`, `nome`, `cargo`, `crmv`, `telefone`, `foto_perfil`, `data_admissao`) VALUES
+(2, 'SAMARA REGINA VIEIRA', 'Veterinario', '103022', '(11) 99833-1839', 'uploads/funcionarios/cliente_6a1853c983c332.75283933.jpg', '2022-03-23');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `pets`
+--
+
+CREATE TABLE `pets` (
+  `id` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `especie` varchar(50) NOT NULL,
+  `raca` varchar(50) DEFAULT NULL,
+  `sexo` varchar(10) DEFAULT NULL,
+  `data_nascimento` date DEFAULT NULL,
+  `idade` int(11) DEFAULT NULL,
+  `pelagem` varchar(100) DEFAULT NULL,
+  `peso` decimal(5,2) DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `vacinacao_atualizada` tinyint(1) DEFAULT 0,
+  `ultima_aplicacao_parasitas` date DEFAULT NULL,
+  `alergias_restricoes` text DEFAULT NULL,
+  `condicoes_especiais` text DEFAULT NULL,
+  `temperamento` varchar(100) DEFAULT NULL,
+  `reacao_animais` varchar(100) DEFAULT NULL,
+  `observacoes_gerais` text DEFAULT NULL,
+  `status_adocao` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `pets`
+--
+
+INSERT INTO `pets` (`id`, `id_cliente`, `nome`, `especie`, `raca`, `sexo`, `data_nascimento`, `idade`, `pelagem`, `peso`, `foto_perfil`, `vacinacao_atualizada`, `ultima_aplicacao_parasitas`, `alergias_restricoes`, `condicoes_especiais`, `temperamento`, `reacao_animais`, `observacoes_gerais`, `status_adocao`) VALUES
+(1, 1, 'Meg', 'Não sei', 'Fiz agora', 'Femea', '2024-05-28', 2, 'Preto e branco, ondulado', '15.00', 'uploads/pets/cliente_6a185266508368.64296097.jpg', 0, '2026-02-23', 'Nenhuma', 'Nenhuma', 'Dócil', 'Sociavel', NULL, 1),
+(2, 3, 'Salsicha', 'Salsicha', 'Salsicha', 'Macho', NULL, 5, 'Marrom, não sei', '100.00', 'uploads/pets/cliente_6a1852e9bedd84.43552620.jpg', 0, '2025-05-27', 'Nenhuma', 'Nenhuma', 'Medo de secador', 'Reativo', NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `produtos`
+--
+
+CREATE TABLE `produtos` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `preco` decimal(10,2) NOT NULL,
+  `estoque` int(11) NOT NULL,
+  `categoria` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `servicos`
+--
+
+CREATE TABLE `servicos` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `categoria` varchar(50) DEFAULT NULL,
+  `preco` decimal(10,2) NOT NULL,
+  `duracao_minutos` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `servicos`
+--
+
+INSERT INTO `servicos` (`id`, `nome`, `categoria`, `preco`, `duracao_minutos`) VALUES
+(1, 'Consulta', 'Clinica Veterinaria', '200.00', 120);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `usuarios`
+--
+
+CREATE TABLE `usuarios` (
+  `id` int(11) NOT NULL,
+  `id_funcionario` int(11) DEFAULT NULL,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `pergunta_secreta` varchar(255) NOT NULL,
+  `resposta_secreta` varchar(255) NOT NULL,
+  `nivel` enum('admin','funcionario','veterinario') DEFAULT 'funcionario',
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `id_funcionario`, `nome`, `email`, `senha`, `pergunta_secreta`, `resposta_secreta`, `nivel`, `criado_em`) VALUES
+(3, 2, 'SAMARA REGINA VIEIRA', 'vet@gmail.com', '123', '123', '123', 'veterinario', '2026-05-28 14:40:09');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `vendas`
+--
+
+CREATE TABLE `vendas` (
+  `id` int(11) NOT NULL,
+  `id_produto` int(11) NOT NULL,
+  `quantidade` int(11) NOT NULL,
+  `data_venda` timestamp NOT NULL DEFAULT current_timestamp(),
+  `valor_total` decimal(10,2) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices para tabela `agendamentos`
+--
+ALTER TABLE `agendamentos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_pet` (`id_pet`),
+  ADD KEY `id_servico` (`id_servico`),
+  ADD KEY `id_funcionario` (`id_funcionario`);
+
+--
+-- Índices para tabela `clientes`
+--
+ALTER TABLE `clientes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `cpf` (`cpf`);
+
+--
+-- Índices para tabela `consultas`
+--
+ALTER TABLE `consultas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_pet` (`id_pet`),
+  ADD KEY `id_funcionario` (`id_funcionario`);
+
+--
+-- Índices para tabela `funcionarios`
+--
+ALTER TABLE `funcionarios`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices para tabela `pets`
+--
+ALTER TABLE `pets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_cliente` (`id_cliente`);
+
+--
+-- Índices para tabela `produtos`
+--
+ALTER TABLE `produtos`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices para tabela `servicos`
+--
+ALTER TABLE `servicos`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices para tabela `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Índices para tabela `vendas`
+--
+ALTER TABLE `vendas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_produto` (`id_produto`);
+
+--
+-- AUTO_INCREMENT de tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `agendamentos`
+--
+ALTER TABLE `agendamentos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `clientes`
+--
+ALTER TABLE `clientes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `consultas`
+--
+ALTER TABLE `consultas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `funcionarios`
+--
+ALTER TABLE `funcionarios`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de tabela `pets`
+--
+ALTER TABLE `pets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de tabela `produtos`
+--
+ALTER TABLE `produtos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `servicos`
+--
+ALTER TABLE `servicos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de tabela `usuarios`
+--
+ALTER TABLE `usuarios`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `vendas`
+--
+ALTER TABLE `vendas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Restrições para despejos de tabelas
+--
+
+--
+-- Limitadores para a tabela `agendamentos`
+--
+ALTER TABLE `agendamentos`
+  ADD CONSTRAINT `agendamentos_ibfk_1` FOREIGN KEY (`id_pet`) REFERENCES `pets` (`id`),
+  ADD CONSTRAINT `agendamentos_ibfk_2` FOREIGN KEY (`id_servico`) REFERENCES `servicos` (`id`),
+  ADD CONSTRAINT `agendamentos_ibfk_3` FOREIGN KEY (`id_funcionario`) REFERENCES `funcionarios` (`id`);
+
+--
+-- Limitadores para a tabela `consultas`
+--
+ALTER TABLE `consultas`
+  ADD CONSTRAINT `consultas_ibfk_1` FOREIGN KEY (`id_pet`) REFERENCES `pets` (`id`),
+  ADD CONSTRAINT `consultas_ibfk_2` FOREIGN KEY (`id_funcionario`) REFERENCES `funcionarios` (`id`);
+
+--
+-- Limitadores para a tabela `pets`
+--
+ALTER TABLE `pets`
+  ADD CONSTRAINT `pets_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id`) ON DELETE CASCADE;
+
+--
+-- Limitadores para a tabela `vendas`
+--
+ALTER TABLE `vendas`
+  ADD CONSTRAINT `vendas_ibfk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
